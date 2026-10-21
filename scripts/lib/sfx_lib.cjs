@@ -17,6 +17,7 @@
 const fs = require('fs');
 const path = require('path');
 const {execFileSync} = require('child_process');
+const paths = require('./paths.cjs');
 
 const FF = paths.FFMPEG;
 const FP = paths.FFPROBE;
@@ -311,7 +312,6 @@ const synthAll = (dir = 'out/sfx') => {
 const kwRevealOffset = (card) => {
   if (!card.lines) return 10;
   const {charStepFor} = require('./script_loader.cjs');
-const paths = require('./paths.cjs');
   let before = 0;
   let total = 0;
   for (const line of card.lines) for (const seg of line) total += seg.t.replace(/\s/g, '').length;

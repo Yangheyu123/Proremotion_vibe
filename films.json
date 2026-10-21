@@ -4,6 +4,10 @@
       "title": "示例片：从这里开始",
       "script": "src/example/script.ts",
       "aspect": "4x3",
+      "vo": {
+        "tailPad": 0.5,
+        "endCardDur": 90
+      },
       "_note": "新片用 node scripts/new_film.cjs <key> <中文标题> 自动登记；deliver 相对 $OUTPUT_HOME",
       "variants": {
         "4x3": {

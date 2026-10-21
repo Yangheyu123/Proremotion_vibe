@@ -159,13 +159,13 @@ node scripts/compliance_check.cjs src/<片>/script.ts    # 🔴RED → exit 3，
 合规   node scripts/compliance_check.cjs <script>                    # 一审，RED=exit 3
 BGM    node scripts/bgm_add.cjs <新歌> [--ss] [--t] [--mood]         # 入库+节拍缓存
        node scripts/snap_boundaries.cjs                              # 吸附→回写 script.ts
-配音   node scripts/vo_build_scene.cjs <film> [--speed 1.25]  # 微调音色合成+重排时间轴（SSOT=voice/voice.json）
+配音   node scripts/vo_build.cjs <film> [--ref <wav>] [--prompt-text ...]  # 微调音色合成+重排时间轴（SSOT=voice.json）
 出片   node scripts/make.cjs <film> [variant] [--dry-run 首查]       # 一键到成片落库+审计（注册表=films.json）
 数据   截图入 output/<片>/数据截图/ → 录 ledger.json → 内容感知诊断（第 9 章）
 ```
 
 - 机制库回归验证：改 src/lib 或 scripts/lib 前先抓基线（静帧 PSNR / WAV MD5），改完必比。
-- 片目注册表 **films.json**（渲染入口/产物路径的唯一事实，make.cjs 与 new_film.cjs 共读写，2026-10-12 从 make.cjs 内联常量外置）；新片由 new_film.cjs 自动登记。
+- 片目注册表 **films.json**（渲染入口/产物路径的唯一事实，make.cjs / new_film.cjs / vo_build_scene.cjs 三方共读写，2026-10-12 外置、2026-10-21 vo_build_scene 并入）；新片由 new_film.cjs 自动登记。
 
 ## 12. 视觉丰富与动效丰富（2026-10-13 固化——编码期执行，不是检查后补丁）
 

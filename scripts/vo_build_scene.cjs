@@ -12,9 +12,9 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const paths = require('./lib/paths.cjs');
 const {execFileSync} = require('child_process');
 const {load, cardText} = require('./lib/script_loader.cjs');
+const paths = require('./lib/paths.cjs');
 
 const FPS = 30;
 const FF = paths.FFMPEG;
@@ -22,17 +22,27 @@ const FP = paths.FFPROBE;
 const TTS_API = paths.TTS_API;
 const BGM = paths.BGM_FLAC; // BGM 标准链路（2026-10-20 拍板）：assets/bgm.flac + 去刺耳链，换曲须用户拍板
 
-/* ---------- 片目配置（新片在此登记；new_film.cjs 生成骨架后手动加一行）---------- */
-const FILMS = {
-  example: {
-    script: 'src/example/script.ts',
-    chrome: 'src/example/chrome.tsx',
-    comp: 'src/example/Film.tsx',
-    outDir: 'out/vo_example',
-    bgmSS: 45,
-    tailPad: 0.5,
-    endCardDur: 90,
-  },
+/* ---------- 片目配置：注册表 = films.json（唯一事实源，2026-10-21 并入，消双登记）----------
+ * 约定推导：chrome = <剧本目录>/chrome.tsx；comp = <剧本目录>/Film.tsx；outDir = out/vo_<key>。
+ * 可选覆盖写在 films.json 片目的 vo 字段：{bgmSS, tailPad, endCardDur, leadIn}，缺省见 DEFAULT_VO。 */
+const FILMS_DOC = JSON.parse(fs.readFileSync('films.json', 'utf8'));
+const FILMS_META = FILMS_DOC.films || FILMS_DOC;
+const DEFAULT_VO = {bgmSS: 45, tailPad: 0.58, endCardDur: 128, leadIn: 18};
+const filmMetaOf = (k) => {
+  const e = FILMS_META[k];
+  if (!e?.script) return null;
+  const dir = e.script.replace(/\/script(_vo)?\.ts$/, '');
+  const vo = {...DEFAULT_VO, ...(e.vo || {})};
+  return {
+    script: e.script,
+    chrome: `${dir}/chrome.tsx`,
+    comp: `${dir}/Film.tsx`,
+    outDir: `out/vo_${k}`,
+    bgmSS: vo.bgmSS,
+    tailPad: vo.tailPad,
+    endCardDur: vo.endCardDur,
+    leadIn: vo.leadIn,
+  };
 };
 
 const argv = process.argv.slice(2);
@@ -44,9 +54,9 @@ const getArg = (n) => {
 const FORCE = argv.includes('--force');
 const SKIP_TTS = argv.includes('--skip-tts');
 const SPEED = parseFloat(getArg('--speed') || '1.25');
-const BASE = FILMS[key];
+const BASE = filmMetaOf(key);
 if (!BASE) {
-  console.error(`usage: node scripts/vo_build_scene.cjs <${Object.keys(FILMS).join('|')}> [--force] [--skip-tts] [--speed 1.12]`);
+  console.error(`usage: node scripts/vo_build_scene.cjs <films.json 里的片 key> [--force] [--skip-tts] [--speed 1.25]`);
   process.exit(1);
 }
 
@@ -142,7 +152,7 @@ const synth = async (i, text, file) => {
   console.log(`== vo_build_scene [${key}] ${m.CARDS.length} 卡，speed=${SPEED}，ref=${path.basename(REF)} ==`);
   if (!SKIP_TTS) {
     try {
-      await fetch(paths.TTS_API.replace(/\/tts$/, '/')), {signal: AbortSignal.timeout(3000)});
+      await fetch('http://127.0.0.1:9880/', {signal: AbortSignal.timeout(3000)});
     } catch {
       console.error('🔴 TTS 服务不在（127.0.0.1:9880）');
       process.exit(1);

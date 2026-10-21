@@ -12,9 +12,9 @@
  */
 const fs = require('fs');
 const path = require('path');
-const paths = require('./lib/paths.cjs');
 const {execFileSync} = require('child_process');
 const {load, cardText} = require('./lib/script_loader.cjs');
+const paths = require('./lib/paths.cjs');
 
 const FF = paths.FFMPEG;
 const FP = paths.FFPROBE;

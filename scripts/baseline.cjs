@@ -15,9 +15,9 @@
  *      这四条足以在合成阶段抓住发散、静音、削波三类事故，且不需要人工听。
  */
 const fs = require('fs');
-const paths = require('./lib/paths.cjs');
 const path = require('path');
 const {execFileSync} = require('child_process');
+const paths = require('./lib/paths.cjs');
 
 const FF = paths.FFMPEG;
 const FP = paths.FFPROBE;

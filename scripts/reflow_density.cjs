@@ -19,9 +19,9 @@
  *   超出量加给场景末卡（只增阅读时间，绝不破坏密度红线）。
  */
 const fs = require('fs');
-const paths = require('./lib/paths.cjs');
 const {execFileSync} = require('child_process');
 const {load, cardChars, cardText, charStepFor} = require('./lib/script_loader.cjs');
+const paths = require('./lib/paths.cjs');
 
 const FPS = 30;
 const BGM = paths.BGM_FLAC;

@@ -24,10 +24,10 @@
  *   → 6 混音落库(拒绝覆盖) → 6b 响度体检 → 7 完播审计 → 报告+JSON 运行记录
  */
 const {execFileSync} = require('child_process');
-const paths = require('./lib/paths.cjs');
 const fs = require('fs');
 const path = require('path');
 const {load, cardText} = require('./lib/script_loader.cjs');
+const paths = require('./lib/paths.cjs');
 
 const NODE = process.execPath;
 const REMOTION = 'node_modules/@remotion/cli/remotion-cli.js'; // .cmd shim 的真实指向（dist/index.js 会静默退出不出片）

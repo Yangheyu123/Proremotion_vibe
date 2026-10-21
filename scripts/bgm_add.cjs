@@ -1,8 +1,8 @@
 /*
- * BGM 入库：新歌拷进 $BGM_HOME/，预跑节拍检测，登记 index.json。
+ * BGM 入库：新歌拷进 /，预跑节拍检测，登记 index.json。
  * 用法：node scripts/bgm_add.cjs <音频文件> [--name 库名] [--ss 切片起点秒] [--t 时长秒] [--mood 情绪标签]
  * 入库后换歌三步（见 METHODOLOGY 第 2 章）：
- *   1. node scripts/beat_detect.cjs <ss> <t> $BGM_HOME/<name>.<ext>   # → out/beats.json
+ *   1. node scripts/beat_detect.cjs <ss> <t> BGM_HOME/<name>.<ext>   # → out/beats.json
  *   2. 按 snap_boundaries.cjs 输出回写 script.ts 的 SCENES/CARDS/BEATS
  *   3. 改该片 sfx 脚本的 bgm/bgmChain/ss/t → node scripts/make.cjs <film> <variant>
  */

@@ -26,9 +26,9 @@
  *   - volumedetect 的 mean/max：直观参考，与旧版肉眼判断口径一致，便于对照历史
  */
 const {execFileSync} = require('child_process');
-const paths = require('./lib/paths.cjs');
 const fs = require('fs');
 const path = require('path');
+const paths = require('./lib/paths.cjs');
 
 const FF = paths.FFMPEG;
 

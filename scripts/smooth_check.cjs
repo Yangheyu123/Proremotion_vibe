@@ -13,9 +13,9 @@
  *      现传入 --script 做边界豁免：边界±20 帧内的 JUMP 归为"转场"，只有场景内部的才报警。
  */
 const {execSync} = require('child_process');
-const paths = require('./lib/paths.cjs');
 const fs = require('fs');
 const path = require('path');
+const paths = require('./lib/paths.cjs');
 
 const video = process.argv[2];
 const allowJump = process.argv.includes('--allow-jump');
