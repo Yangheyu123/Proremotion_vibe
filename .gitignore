@@ -1,0 +1,24 @@
+# 产物与素材（不入库）
+out/
+output/
+*.mp4
+*.wav
+*.flac
+*.mp3
+
+# 本地音色身份（真正的 voice.json 含参考音与文字稿，绝不入库；模板是 voice.example.json）
+voice/voice.json
+voice/*.wav
+
+# 数据台账（个人运营数据）
+analytics/ledger.json
+analytics/rules/*_规则快照.md
+
+# 依赖与缓存
+node_modules/
+node_modules/.cache/
+
+# 系统杂物
+.DS_Store
+Thumbs.db
+*.log

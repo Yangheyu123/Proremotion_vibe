@@ -1,0 +1,12 @@
+{
+  "_说明": "复制为 voice/voice.json 并填成你自己的音色。这是配音产线的音色单一事实源（SSOT）——vo_build_scene 零旗子默认读取。",
+  "name": "my-voice",
+  "ref_audio": "voice/ref.wav",
+  "_ref_audio_要求": "GPT-SoVITS 微调语料切片，5-10s，干净人声；audio 内容必须与 prompt_text 逐字一致（差一个字都会全面劣化）",
+  "prompt_text": "这里填写参考音频的逐字文字稿。",
+  "postEq": "highpass=f=75,afftdn=nr=10:nf=-30,equalizer=f=3400:t=q:w=1.4:g=-2.2,highshelf=f=9500:g=-2.5,equalizer=f=180:t=q:w=1.2:g=1.5",
+  "_postEq_说明": "人声抛光链（去刺/去齿音/降噪/磁性），显式传空字符串 '' 关闭",
+  "default_speed": 1.25,
+  "_default_speed_说明": "vo_build_scene 的默认语速基准（用户实测 1.12 太慢）",
+  "corpus_minutes": 0
+}

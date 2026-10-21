@@ -1,0 +1,19 @@
+{
+  "films": {
+    "example": {
+      "title": "示例片：从这里开始",
+      "script": "src/example/script.ts",
+      "aspect": "4x3",
+      "_note": "新片用 node scripts/new_film.cjs <key> <中文标题> 自动登记；deliver 相对 $OUTPUT_HOME",
+      "variants": {
+        "4x3": {
+          "comp": "Example",
+          "raw": "out/example-raw.mp4",
+          "sfx": "scripts/sfx_example.cjs",
+          "sfxArgs": [],
+          "deliver": "output/示例片/示例片_4x3.mp4"
+        }
+      }
+    }
+  }
+}

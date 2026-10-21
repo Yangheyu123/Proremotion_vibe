@@ -1,0 +1,39 @@
+{
+  "name": "proremotion-vibe",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render:example": "remotion render src/index.ts Example out/example-raw.mp4 --codec=h264 --crf=18",
+    "render:effectslab": "remotion render src/index.ts EffectsLab out/effectslab-test.mp4 --codec=h264 --crf=18"
+  },
+  "dependencies": {
+    "@react-three/fiber": "8.17.10",
+    "@remotion/animation-utils": "4.0.536",
+    "@remotion/captions": "4.0.536",
+    "@remotion/cli": "4.0.536",
+    "@remotion/effects": "4.0.536",
+    "@remotion/google-fonts": "4.0.536",
+    "@remotion/install-whisper-cpp": "4.0.536",
+    "@remotion/layout-utils": "4.0.536",
+    "@remotion/lottie": "4.0.536",
+    "@remotion/media-utils": "4.0.536",
+    "@remotion/motion-blur": "4.0.536",
+    "@remotion/noise": "4.0.536",
+    "@remotion/paths": "4.0.536",
+    "@remotion/shapes": "4.0.536",
+    "@remotion/skia": "4.0.536",
+    "@remotion/transitions": "4.0.536",
+    "@shopify/react-native-skia": "1.12.4",
+    "lottie-web": "5.13.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.536",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "@types/three": "0.186.0",
+    "typescript": "5.6.3"
+  }
+}
