@@ -101,8 +101,8 @@ const ttsTextOf = (card) => {
 const planPath = path.join(OUT_DIR, 'plan.json');
 const oldPlan = fs.existsSync(planPath) ? JSON.parse(fs.readFileSync(planPath, 'utf8')) : {cards: []};
 
-const synth = async (i, text, file) => {
-  const hash = md5(text + '|' + REF + '|' + PROMPT + '|' + SPEED);
+const synth = async (i, text, file, sp) => {
+  const hash = md5(text + '|' + REF + '|' + PROMPT + '|' + sp);
   const prev = (oldPlan.cards || [])[i];
   if (!FORCE && prev && prev.hash === hash && fs.existsSync(file)) {
     return {hash, reused: true, dur: probeDur(file)};
@@ -117,7 +117,7 @@ const synth = async (i, text, file) => {
         prompt_text: PROMPT,
         prompt_lang: 'zh',
         text_split_method: 'cut5',
-        speed_factor: SPEED,
+        speed_factor: sp,
       });
       const res = await fetch(TTS_API, {
         method: 'POST',
@@ -163,6 +163,8 @@ const synth = async (i, text, file) => {
   for (let i = 0; i < m.CARDS.length; i++) {
     const card = m.CARDS[i];
     const text = card.visualOnly ? '' : ttsTextOf(card);
+    /* 逐卡语速（Card.speed）——节奏曲线：钩子快、思辨慢；缺省回落 --speed */
+    const sp = card.speed ?? SPEED;
     if (!text) {
       voices.push({i, text: '', file: null, dur: 0, hash: null, reused: true});
       console.log(`  c${i}: 无旁白（visualOnly）`);
@@ -175,10 +177,12 @@ const synth = async (i, text, file) => {
         : (() => {
             throw new Error(`${file} 不存在（--skip-tts）`);
           })()
-      : await synth(i, text, file);
+      : await synth(i, text, file, sp);
     const n = card.lines.reduce((a, l) => a + l.reduce((b, s) => b + s.t.replace(/\s/g, '').length, 0), 0);
-    console.log(`  c${i}: ${r.dur.toFixed(2)}s / ${n}字（${(n / r.dur).toFixed(1)}字/s）${r.reused ? ' [缓存]' : ''}`);
-    voices.push({i, text, file, dur: r.dur, hash: r.hash, reused: r.reused});
+    console.log(
+      `  c${i}: ${r.dur.toFixed(2)}s / ${n}字（${(n / r.dur).toFixed(1)}字/s）×${sp.toFixed(2)}${r.reused ? ' [缓存]' : ''}`,
+    );
+    voices.push({i, text, file, dur: r.dur, hash: r.hash, reused: r.reused, speed: sp});
   }
 
   /* ---------- 1. 卡时长 = 语音 + 尾息；总长锁 TOTAL ---------- */
@@ -189,14 +193,17 @@ const synth = async (i, text, file) => {
   const durs = m.CARDS.map((c, i) => {
     const v = voices[i];
     if (!v.file) return BASE.endCardDur;
-    return Math.max(30, Math.ceil((v.dur + BASE.tailPad) * FPS)) + (i === firstVoiced ? LEAD_IN : 0);
+    /* 逐卡尾息（Card.tailPad）——急促段收紧、停顿段放开；缺省回落片目 vo.tailPad */
+    const tp = c.tailPad ?? BASE.tailPad;
+    return Math.max(30, Math.ceil((v.dur + tp) * FPS)) + (i === firstVoiced ? LEAD_IN : 0);
   });
   let sum = durs.reduce((a, b) => a + b, 0);
   if (sum > m.TOTAL) {
-    // 尾息收紧到 0.3s 再试（首句留白保留，不许被收紧抹掉）
+    // 尾息收紧（按比例缩到 55%，下限 0.22s；首句留白保留，不许被收紧抹掉）
     for (let i = 0; i < durs.length; i++) {
       if (voices[i].file) {
-        durs[i] = Math.max(26, Math.ceil((voices[i].dur + 0.3) * FPS)) + (i === firstVoiced ? LEAD_IN : 0);
+        const tp = Math.max(0.22, (m.CARDS[i].tailPad ?? BASE.tailPad) * 0.55);
+        durs[i] = Math.max(26, Math.ceil((voices[i].dur + tp) * FPS)) + (i === firstVoiced ? LEAD_IN : 0);
       }
     }
     sum = durs.reduce((a, b) => a + b, 0);
@@ -344,6 +351,8 @@ const synth = async (i, text, file) => {
           text: x.text,
           file: x.file,
           hash: x.hash,
+          speed: x.speed ?? SPEED,
+          tailPad: m.CARDS[i].tailPad ?? BASE.tailPad,
           voiceDur: +x.dur.toFixed(3),
           from: froms[i],
           dur: durs[i],

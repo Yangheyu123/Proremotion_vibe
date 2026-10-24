@@ -107,6 +107,9 @@ const hashFile = (p) => crypto.createHash('md5').update(fs.readFileSync(p)).dige
 const renderHashOf = () => {
   const h = crypto.createHash('md5');
   const dir = path.dirname(film.script);
+  // ⚠️ 2026-10-22 加固：片目录下全部 ts/tsx（Film.tsx/chrome.tsx 等）都进哈希——
+  // 此前只哈希 script/index/Root/package，改 Film.tsx 视觉不会打废缓存 stamp，
+  // 导致"改了组件但渲染缓存命中"复用旧画面（calc 实测雷）。
   const files = [film.script, 'src/index.ts', 'src/Root.tsx', 'package.json'];
   for (const d of ['src/lib', dir]) {
     for (const f of fs.readdirSync(d)) {
