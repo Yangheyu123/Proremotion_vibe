@@ -100,3 +100,25 @@ export const seedOf = (n: number | string): number => {
 /** 每拍一 hero 的注意力闸：返回该帧是否轮到此元素做主视觉（同拍多元素时只有一个 hero） */
 export const heroSlot = (beatIdx: number, elemIdx: number): boolean =>
   (beatIdx + elemIdx) % 2 === 0;
+
+/**
+ * statesOf — 一卡多态语法层（2026-10-25 拍板：一句话对应多次整屏级状态切换）。
+ * 把卡时长均分为 count 个状态窗；每个状态给 {start, dur, p}——p 是该状态的进入进度 0..1，
+ * 场景按 p 切换构图（前态退、后态进，整屏级差异 ≥50%）。每态一个焦点。
+ *
+ * 用法（场景内，localF = 场景局部帧）：
+ *   const st = statesOf(localF, card.dur, 3);
+ *   st[0].p // 态1 进入进度 → 驱动构图 A；st[1].p > 0 时切构图 B …
+ */
+export const statesOf = (
+  localF: number,
+  dur: number,
+  count: number,
+): {start: number; dur: number; p: number}[] => {
+  const each = dur / count;
+  const ramp = Math.min(each, 18);
+  return Array.from({length: count}, (_, i) => {
+    const t = (localF - i * each) / ramp;
+    return {start: i * each, dur: each, p: t < 0 ? 0 : t > 1 ? 1 : t};
+  });
+};
