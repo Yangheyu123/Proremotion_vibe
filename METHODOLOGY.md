@@ -162,6 +162,7 @@ BGM    node scripts/bgm_add.cjs <新歌> [--ss] [--t] [--mood]         # 入库+
        node scripts/snap_boundaries.cjs                              # 吸附→回写 script.ts
 配音   node scripts/vo_build.cjs <film> [--ref <wav>] [--prompt-text ...]  # 微调音色合成+重排时间轴（SSOT=voice.json）
 出片   node scripts/make.cjs <film> [variant] [--dry-run 首查]       # 一键到成片落库+审计（注册表=films.json）
+章节   node scripts/chapters.cjs <filmKey> [--vo]                    # 导出章节时间轴（抖音手动入口照抄/多平台描述章节）
 数据   截图入 output/<片>/数据截图/ → 录 ledger.json → 内容感知诊断（第 9 章）
 ```
 

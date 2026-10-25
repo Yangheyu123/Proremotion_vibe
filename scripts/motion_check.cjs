@@ -31,7 +31,7 @@ const src = fs.readFileSync(filmFile, 'utf8');
 
 const count = (s, re) => (s.match(re) || []).length;
 const RE_NODES = /<circle|<path |<rect|<ellipse|<line |<polygon|<polyline/g;
-const RE_PERIODIC = /f \* ?[\d.]+|f \/ ?[\d.]+|Math\.sin\(f|Math\.cos\(f|noise2D\(|\bdrift\(|\bsway2\(|\borbit\(|% 1/g;
+const RE_PERIODIC = /f \* ?[\d.]+|f \/ ?[\d.]+|Math\.sin\(f|Math\.cos\(f|noise2D\(|\bdrift\(|\bsway2\(|\borbit\(|\bosc\(|\bcyc\(|% 1/g;
 const RE_ANCHORS = /\bpop\(|heroIn\(|\bspring\(/g;
 
 /* 按场景切分（只认 *Scene 组件；根组件 Film 与辅助件不计，行级仅情报） */

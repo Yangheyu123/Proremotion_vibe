@@ -277,7 +277,7 @@ try {
 step('2b', '永续运动密度检查');
 try {
   const dir = path.dirname(film.script);
-  run('node', ['scripts/motion_check.cjs', path.join(dir, 'Film.tsx'), ...(flags.has('--strict') ? ['--strict'] : [])]);
+  run('scripts/motion_check.cjs', [path.join(dir, 'Film.tsx'), ...(flags.has('--strict') ? ['--strict'] : [])]);
 } catch (e) {
   // motion_check 自身失败不拦产线（度量是软闸）；密度不达标在 --strict 时已由其 exit 1 表达
   if (e.status !== 1) console.log(`（motion_check 跳过：${String(e.message || e).split('\n')[0]}）`);

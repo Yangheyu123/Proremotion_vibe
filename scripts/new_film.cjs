@@ -227,7 +227,9 @@ let root = fs.readFileSync(ROOT, 'utf8');
 const rootBefore = root;
 if (!root.includes(`./${key}/Film`)) {
   const IMP_ANCHOR = "import {Showcase} from './showcase/Showcase';";
-  const JSN_ANCHOR = '  </>\n);';
+  /* 2026-10-25：Root.tsx 可能是 CRLF（finite 开工实测锚点失配），按实际换行符构造 */
+  const NL = root.includes('\r\n') ? '\r\n' : '\n';
+  const JSN_ANCHOR = `  </>${NL});`;
   if (!root.includes(IMP_ANCHOR) || !root.includes(JSN_ANCHOR)) {
     console.error(`\n⛔ Root.tsx 的插入锚点找不到（import 或 JSX 结尾被改过）。`);
     console.error('   请手工在 src/Root.tsx 里加一行 import + 一个 <Composition>，然后重跑。');
