@@ -60,11 +60,13 @@ console.log(
 );
 if (totalChars > limit) warns++;
 
-/* 3. 单行长度 */
+/* 3. 单行长度 + 行数上限（2026-10-31 拍板：每卡 ≤2 行，最好 1 行） */
 cards.forEach((c, i) => {
+  const nLines = (c.lines || []).length;
+  if (nLines > 2) fail(`卡${i} ${nLines} 行 > 每卡上限 2 行（最好 1 行）——重新断句`);
   (c.lines || []).forEach((l, li) => {
     const len = l.map((s) => s.t).join('').replace(/\s/g, '').length;
-    if (len > maxLine) fail(`卡${i} 行${li + 1} ${len}字 > 单行上限 ${maxLine}（${W} 宽）`);
+    if (len > maxLine) fail(`卡${i} 行${li + 1} ${len}字 > 单行上限 ${maxLine}（${W} 宽，软目标）`);
   });
 });
 
