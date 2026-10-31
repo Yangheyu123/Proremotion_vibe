@@ -35,7 +35,10 @@ const TSC = 'node_modules/typescript/bin/tsc';
 const FF = paths.FFMPEG;
 const FP = paths.FFPROBE;
 const LEDGER = paths.ANALYTICS_HOME + '/ledger.json'; // 发布台账（PLAN §3.8：覆盖保护要看发布状态）
-const CONCURRENCY = 12; // 16 逻辑核实测余量安全值
+// 16 逻辑核实测余量安全值；webgl 效果片（HtmlInCanvas + @remotion/effects）需降并发——
+// 12 路同时开 webgl 上下文会撞 "Glow framebuffer incomplete: 0x8cdd"（self 片实测 2026-10-30）。
+// 用 MAKE_CONCURRENCY=4 覆盖。
+const CONCURRENCY = Math.max(1, parseInt(process.env.MAKE_CONCURRENCY || '12', 10) || 12);
 /** 2026-10-19：Remotion 的 pre-encode 走系统 TEMP，Windows 沙箱/杀软会拒写（Permission denied）。
  *  统一改到仓内 out/tmp，随工作区可写；子进程经 env 继承。 */
 const TMP_DIR = path.resolve('out/tmp');
@@ -493,6 +496,12 @@ step('7b', '连贯性审计（硬切率）');
 
 /* ---------- 报告 ---------- */
 const repPath = writeReport('done', {deliver: v.deliver, raw: v.raw});
+/* ---------- VidInsight 发布登记(静默,失败不阻断) ---------- */
+try {
+  run('scripts/notify_vidinsight.cjs', [filmKey, vk, v.deliver, film.script]);
+} catch (e) {
+  console.log(`（VidInsight 回调跳过:${e.message}）`);
+}
 console.log(`
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ 产线完成 ${elapsed()}（运行记录：${repPath}）

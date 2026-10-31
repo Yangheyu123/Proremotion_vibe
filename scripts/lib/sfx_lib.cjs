@@ -114,7 +114,7 @@ const norm = (buf, peak = 1) => {
   return buf;
 };
 
-/* ---------- 音效库（18 音）---------- */
+/* ---------- 音效库（20 音：18 基音 + 2026-10-31 追加 pluck/pluckLow）---------- */
 const LIB = {
   // 低音落地（卡片/转场落点）
   thud: () => mix({buf: norm(sine(88, 44, 0.26, 0.07)), at: 0}, {buf: norm(bandpass(noise(0.02), 900, 900), 0.4), at: 0}),
@@ -215,6 +215,45 @@ const LIB = {
   },
   // 木塔落定
   settle: () => mix({buf: norm(sine(150, 88, 0.3, 0.09), 0.8), at: 0}, {buf: norm(bandpass(noise(0.05), 400, 400, 1.5), 0.5), at: 0}),
+  /* ---- 2026-10-31 追加（qinxian 片需要"三弦被拨响"；追加在末尾，前面 18 音的噪声序列不受影响）----
+   * 拨弦 Karplus-Strong：一段噪声灌进延时线，循环取平均 → 弦的物理模型。
+   * pluck = G3（196Hz），pluckLow = C3（131Hz）。 */
+  pluck: () => {
+    const N = Math.round(SR / 196);
+    const total = sec(1.5);
+    const line = new Float32Array(N);
+    const n = noise(1);
+    for (let i = 0; i < N; i++) line[i] = n[i];
+    const out = new Float32Array(total);
+    let idx = 0;
+    for (let i = 0; i < total; i++) {
+      const cur = line[idx];
+      const nxt = line[(idx + 1) % N];
+      out[i] = cur;
+      line[idx] = 0.9968 * 0.5 * (cur + nxt);
+      idx = (idx + 1) % N;
+    }
+    for (let i = 0; i < total; i++) out[i] *= Math.min(1, i / 32) * Math.pow(1 - i / total, 0.55);
+    return norm(out, 0.92);
+  },
+  pluckLow: () => {
+    const N = Math.round(SR / 131);
+    const total = sec(1.9);
+    const line = new Float32Array(N);
+    const n = noise(1);
+    for (let i = 0; i < N; i++) line[i] = n[i];
+    const out = new Float32Array(total);
+    let idx = 0;
+    for (let i = 0; i < total; i++) {
+      const cur = line[idx];
+      const nxt = line[(idx + 1) % N];
+      out[i] = cur;
+      line[idx] = 0.9975 * 0.5 * (cur + nxt);
+      idx = (idx + 1) % N;
+    }
+    for (let i = 0; i < total; i++) out[i] *= Math.min(1, i / 36) * Math.pow(1 - i / total, 0.5);
+    return norm(out, 0.95);
+  },
 };
 
 /* ---------- 写 WAV / 全库合成 ---------- */
@@ -506,7 +545,10 @@ const buildMix = (opts) => {
     slotOf.set(sound, k + 1);
     const tag = `s${i}`;
     // 微动层（≤-22dB）整体抬 4dB，保证可感；重音层不动
-    const v = vol <= -22 ? vol + 4 : vol;
+    // sfxGain（2026-10-31）：整条音效轨的全局增益（dB，缺省 0 = 历史行为不变）。
+    // 纯 BGM 字幕流用得上——音效层与 BGM 同响时（实测 -22.2 vs -21.2 LUFS）会糊住旋律，
+    // 传 -6 让 BGM 浮出来，impact 在排期里自行 +3 补偿。
+    const v = (vol <= -22 ? vol + 4 : vol) + (opts.sfxGain || 0);
 
     let pitchChain = '';
     if (pitch) {

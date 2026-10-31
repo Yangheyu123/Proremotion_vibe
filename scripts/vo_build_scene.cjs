@@ -88,7 +88,12 @@ if (!m.CARDS?.length || !m.TOTAL) {
 
 /** 卡文本 → TTS 文本：行间已带标点就不再加逗号 */
 const ttsTextOf = (card) => {
-  const lines = cardText(card)
+  /* seg.tts：发音专用写法（字幕仍用 seg.t）。用于 TTS 读不好的词——
+     例：英文缩写 "AI" 交给中文前端会读成洋腔/单音节，改写成中文同音字"诶爱"强制按中文读。 */
+  const raw = card.lines
+    ? card.lines.map((l) => l.map((s) => (s.tts != null ? s.tts : s.t)).join('')).join('\n')
+    : cardText(card);
+  const lines = raw
     .split('\n')
     .map((l) => l.replace(/·/g, '、').replace(/\s*—\s*/g, '，').trim())
     .filter(Boolean);
