@@ -341,7 +341,8 @@ console.log(`
 
 动工检查单（按顺序）：
   1. 视觉提案：theme.ts 顶部 TODO 填满，对照 IDENTITIES.md 身份台账查重（皮骨都查，只对表不翻旧片源码，撞车才开对应片）
-  1b. 组件选型：读 src/kit/INDEX.md，本片 ≥60% 视觉用 kit 组件参数化组装（换配色=新身份），自研新技法 ≤1 个且验收后提炼回 kit
+  1b. 组件选型（按需，不强制）：读 src/kit/INDEX.md 技法货架——需要轨道/人物立绘/板书线/价签/尘层时直接取用；
+      自研直出前先对照 kit 同类组件质量（低于参照 = 换用或重写）；验收通过的新技法提炼回 kit
      （皮骨都换：chrome 组件禁止照搬上片结构只换色——字幕带位置/形态/出场方式至少两项实质不同；收工填满台账本片行）
   2. 剧本：script.ts CARDS 写满 → node scripts/dwell_check.cjs ${dir}/script.ts 过密度红线
   3. 合规：node scripts/compliance_check.cjs ${dir}/script.ts 一审（RED=改写）
