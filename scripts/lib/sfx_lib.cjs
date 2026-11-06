@@ -575,7 +575,7 @@ const buildMix = (opts) => {
   if (useBgm) chains.push(`[1:a]${opts.bgmChain}[bgm]`);
   // 无 BGM 时 amix 的 longest 只到最后一轨语音结束，-shortest 会把视频截短；
   // apad 把音轨补到视频长度，-shortest 以 120s 视频为准（2026-10-18 配音无BGM版实测修复）。
-  chains.push(`${mixIns.join('')}amix=inputs=${mixIns.length}:normalize=0:duration=${useBgm ? 'first' : 'longest'}${useBgm ? '' : ',apad'},alimiter=limit=${opts.limiterLimit ?? 0.89}:level=disabled:level_in=${opts.limiterLevelIn ?? 1}[aout]`);
+  chains.push(`${mixIns.join('')}amix=inputs=${mixIns.length}:normalize=0:duration=${useBgm ? 'first' : 'longest'}${useBgm ? '' : ',apad'},alimiter=limit=${opts.limiterLimit ?? 0.89}:level=disabled:level_in=${opts.limiterLevelIn ?? 1}${opts.tailChain ? ',' + opts.tailChain : ''}[aout]`);
   // ⚠ level=disabled（2026-10-18）：alimiter 的 auto-level 默认开启，限幅后会把电平抬回满度，
   //   调低 limit 完全无效（配音版实测 TP 恒 0.1dBFS）。关掉后 limit 才是真天花板。
   //   level_in：响度不够时用输入增益顶（limit 封峰），别抬 limit。

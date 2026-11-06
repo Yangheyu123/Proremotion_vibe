@@ -22,27 +22,33 @@ if (!arg) {
   console.error('usage: node scripts/motion_check.cjs <filmKey | Film.tsx 路径> [--strict]');
   process.exit(1);
 }
-const filmFile = /[/\\]/.test(arg) ? arg : path.join('src', arg, 'Film.tsx');
-if (!fs.existsSync(filmFile)) {
-  console.error(`🔴 找不到 ${filmFile}`);
+const isFile = /\.tsx$/.test(arg);
+const dir = isFile ? path.dirname(arg) : path.join('src', arg);
+if (!fs.existsSync(dir)) {
+  console.error(`🔴 找不到 ${dir}`);
   process.exit(1);
 }
-const src = fs.readFileSync(filmFile, 'utf8');
+/* 冻结副本（*VO.tsx / *_vo.tsx）是派生拷贝，重复计数会把密度灌水，排除 */
+const files = (isFile ? [path.basename(arg)] : fs.readdirSync(dir).filter((f) => f.endsWith('.tsx')))
+  .filter((f) => !/VO\.tsx$|_vo\.tsx$/.test(f))
+  .sort();
+const src = files.map((f) => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n');
 
 const count = (s, re) => (s.match(re) || []).length;
 const RE_NODES = /<circle|<path |<rect|<ellipse|<line |<polygon|<polyline/g;
-const RE_PERIODIC = /f \* ?[\d.]+|f \/ ?[\d.]+|Math\.sin\(f|Math\.cos\(f|noise2D\(|\bdrift\(|\bsway2\(|\borbit\(|\bosc\(|\bcyc\(|% 1/g;
+const RE_PERIODIC = /f \* ?[\d.]+|f \/ ?[\d.]+|Math\.sin\(f|Math\.cos\(f|noise2D\(|\bdrift\(|\bsway2\(|\borbit\(|\bosc\(|\bcyc\(|\bwob\(|hash\(fr|hash\(Math\.floor\(f|% 1/g;
 const RE_ANCHORS = /\bpop\(|heroIn\(|\bspring\(/g;
 
 /* 按场景切分（只认 *Scene 组件；根组件 Film 与辅助件不计，行级仅情报） */
 const sceneRe = /const (\w+Scene): React\.FC = /g;
-const marks = [];
+let marks = [];
 let mm;
 while ((mm = sceneRe.exec(src)) !== null) marks.push({name: mm[1], at: mm.index});
-if (marks.length < 2) marks = [{name: path.basename(filmFile), at: 0}];
+if (marks.length < 2) marks = [{name: path.basename(dir), at: 0}];
 
-console.log(`== motion_check ${path.basename(filmFile)}（静态启发式，报告+人判读）==`);
+console.log(`== motion_check ${path.basename(dir)}（扫描 ${files.length} 个 .tsx：${files.join(', ')}）==`);
 console.log('场景 | 图元 | 周期 | 密度 | 锚点(情报)');
+if (files.length > 1) console.log('（注：多文件时场景归属失真——viz/chrome 的图元会全部记到最后一场，只看全片合计）');
 let totN = 0, totP = 0, totA = 0;
 for (let i = 0; i < marks.length; i++) {
   const seg = src.slice(marks[i].at, i + 1 < marks.length ? marks[i + 1].at : undefined);

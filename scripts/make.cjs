@@ -280,7 +280,9 @@ try {
 step('2b', '永续运动密度检查');
 try {
   const dir = path.dirname(film.script);
-  run('scripts/motion_check.cjs', [path.join(dir, 'Film.tsx'), ...(flags.has('--strict') ? ['--strict'] : [])]);
+  // 传片目录名（不是单个 Film.tsx）：viz/chrome 才是视觉节点所在，
+  // 只扫 Film.tsx 会把帧驱动周期全漏掉、密度假报 0.00（bunanguo 实测雷）。
+  run('scripts/motion_check.cjs', [path.basename(dir), ...(flags.has('--strict') ? ['--strict'] : [])]);
 } catch (e) {
   // motion_check 自身失败不拦产线（度量是软闸）；密度不达标在 --strict 时已由其 exit 1 表达
   if (e.status !== 1) console.log(`（motion_check 跳过：${String(e.message || e).split('\n')[0]}）`);
@@ -329,7 +331,7 @@ if (!skipRender && !flags.has('--skip-proxy')) {
   step(3, `低清代理预渲 → ${proxy}`);
   run(REMOTION, [
     'render', 'src/index.ts', v.comp, proxy,
-    '--codec=h264', '--crf=30', '--scale=0.5', `--concurrency=${CONCURRENCY}`, '--log=error',
+    '--codec=h264', '--crf=30', '--scale=0.5', `--concurrency=${CONCURRENCY}`, '--log=error', '--timeout=120000',
   ], {env: RENDER_ENV});
   step('3b', '代理丝滑检查（转场断裂早发现）');
   // --allow-jump 透传：hero 弹入等设计事件在代理级也会产生孤立小尖峰（终检闸门同样放行）
@@ -344,7 +346,7 @@ if (!skipRender) {
   try {
     run(REMOTION, [
       'render', 'src/index.ts', v.comp, v.raw,
-      '--codec=h264', '--crf=18', `--concurrency=${CONCURRENCY}`, '--log=error',
+      '--codec=h264', '--crf=18', `--concurrency=${CONCURRENCY}`, '--log=error', '--timeout=120000',
     ], {env: RENDER_ENV});
   } catch (e) {
     console.error(`\n⛔ 全量渲染失败（${v.comp} → ${v.raw}）——这是最贵的一步，报告已落盘以便定位。`);

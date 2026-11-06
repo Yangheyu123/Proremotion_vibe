@@ -54,6 +54,11 @@ const getArg = (n) => {
 const FORCE = argv.includes('--force');
 const SKIP_TTS = argv.includes('--skip-tts');
 const SPEED = parseFloat(getArg('--speed') || '1.25');
+/* 切分策略必须 cut0（不切）。铁律 2026-11-02：cut5「按标点切」会把一卡拆成多个
+ * batch 分别合成，其中某个 batch 偶发失败时**静默丢弃**（用等长静音顶上），
+ * 于是字幕在、语音缺半句（relive c06 丢「你反复想象的」、c10 丢「没有失去那个人」）。
+ * 逐卡合成时每卡 ≤ 20 字，整句直送 TTS 完全够用，绝不需要二次切分。 */
+const SPLIT = 'cut0';
 const BASE = filmMetaOf(key);
 if (!BASE) {
   console.error(`usage: node scripts/vo_build_scene.cjs <films.json 里的片 key> [--force] [--skip-tts] [--speed 1.25]`);
@@ -95,7 +100,14 @@ const ttsTextOf = (card) => {
     : cardText(card);
   const lines = raw
     .split('\n')
-    .map((l) => l.replace(/·/g, '、').replace(/\s*—\s*/g, '，').trim())
+    .map((l) =>
+      l
+        .replace(/·/g, '、')
+        /* 破折号 → 顿挫：必须一次吃掉连续多个，否则 "——" 会变成 "，，"（双逗号 → 长气口） */
+        .replace(/\s*[—–]+\s*/g, '，')
+        .replace(/，{2,}/g, '，')
+        .trim(),
+    )
     .filter(Boolean);
   return lines.reduce((acc, l, i) => {
     if (i === 0) return l;
@@ -107,7 +119,7 @@ const planPath = path.join(OUT_DIR, 'plan.json');
 const oldPlan = fs.existsSync(planPath) ? JSON.parse(fs.readFileSync(planPath, 'utf8')) : {cards: []};
 
 const synth = async (i, text, file, sp) => {
-  const hash = md5(text + '|' + REF + '|' + PROMPT + '|' + sp);
+  const hash = md5(text + '|' + REF + '|' + PROMPT + '|' + sp + '|' + SPLIT);
   const prev = (oldPlan.cards || [])[i];
   if (!FORCE && prev && prev.hash === hash && fs.existsSync(file)) {
     return {hash, reused: true, dur: probeDur(file)};
@@ -121,7 +133,7 @@ const synth = async (i, text, file, sp) => {
         ref_audio_path: REF.replace(/\\/g, '/'),
         prompt_text: PROMPT,
         prompt_lang: 'zh',
-        text_split_method: 'cut5',
+        text_split_method: SPLIT,
         speed_factor: sp,
       });
       const res = await fetch(TTS_API, {
